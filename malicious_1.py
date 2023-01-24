@@ -1,4 +1,4 @@
-from model import simulate_bc_own_belief_malicious_1, simulate_bc_pooled_belief_malicious_1
+from model import simulate_bc_own_belief_malicious_1, simulate_bc_pooled_belief_malicious_1, simulate_confidence_malicious_1
 import matplotlib.pyplot as plt
 import warnings
 
@@ -56,6 +56,8 @@ pool_ls = np.linspace(3,15,7).astype(int)
 belief_evidence = []
 belief_own = []
 belief_pooled = []
+belief_confidence = []
+
 for k in pool_ls:
     pooling = False
     result_evidence = simulate_bc_own_belief_malicious_1(simulation_times=simulation_times, pop_n=pop_n, max_iteration=max_iteration,
@@ -78,17 +80,24 @@ for k in pool_ls:
                                                     malicious = malicious, threshold= threshold, noise=noise, pooling=pooling, dampening = dampening)
     belief_pooled.append(result_pooled['belief_avg_true_good'].mean(axis=1)[-1])
 
+    pooling = True
+    result_confidence = simulate_confidence_malicious_1(simulation_times=simulation_times, pop_n=pop_n, max_iteration=max_iteration, k=k, init_x = init_x, classification = True,
+                                    dampening=dampening, alpha=alpha, prob_evidence=prob_evidence, malicious=malicious, mal_x=mal_x, threshold= threshold, noise=noise, pooling=pooling)
+    belief_confidence.append(result_confidence['belief_avg_true_good'].mean(axis=1)[-1])
+
+
 plt.figure('pool size')
 
 plt.plot(pool_ls, belief_evidence, '--')
 plt.plot(pool_ls, belief_own)
 plt.plot(pool_ls, belief_pooled)
+plt.plot(pool_ls, belief_confidence)
 plt.ylim(0,1)
-plt.legend(['evidence only', 'own belief', 'pooled belief'])
-plt.title('BC model with different distance')
+plt.legend(['evidence only', 'own belief', 'pooled belief', 'confidence updating'])
+plt.title('average belief over 1000 iterations in different models')
 plt.xlabel('pool size k')
 plt.ylabel('avg belief')
-plt.savefig(file_name + 'bc_malicious_1_pool_size.png')
+plt.savefig(file_name + 'malicious_1_pool_size.png')
 
 
 
@@ -105,6 +114,7 @@ mal_x_ls = [0, 0.02, 0.04, 0.06, 0.08, 0.1]
 belief_evidence = []
 belief_own = []
 belief_pooled = []
+belief_confidence = []
 for malicious in mal_x_ls:
     pooling = False
     result_evidence = simulate_bc_own_belief_malicious_1(simulation_times=simulation_times, pop_n=pop_n, max_iteration=max_iteration,
@@ -127,18 +137,29 @@ for malicious in mal_x_ls:
                                                           malicious = malicious, threshold= threshold, noise=noise, pooling=pooling, dampening = dampening)
     belief_pooled.append(result_pooled['belief_avg_true_good'].mean(axis=1)[-1])
 
+    pooling = True
+    result_confidence = simulate_confidence_malicious_1(simulation_times=simulation_times, pop_n=pop_n,
+                                                        max_iteration=max_iteration, k=k, init_x=init_x,
+                                                        classification=True,
+                                                        dampening=dampening, alpha=alpha, prob_evidence=prob_evidence,
+                                                        malicious=malicious, mal_x=mal_x, threshold=threshold,
+                                                        noise=noise, pooling=pooling)
+    belief_confidence.append(result_confidence['belief_avg_true_good'].mean(axis=1)[-1])
+
 plt.figure('malicious')
+
 plt.plot(mal_x_ls, belief_evidence, '--')
 plt.plot(mal_x_ls, belief_own)
 plt.plot(mal_x_ls, belief_pooled)
+plt.plot(mal_x_ls, belief_confidence)
 
 plt.ylim(0,1)
+plt.legend(['evidence only', 'own belief', 'pooled belief', 'confidence updating'])
+plt.title('average belief over 1000 iterations in different models')
 
-plt.legend(['evidence only', 'own belief', 'pooled belief'])
-plt.title('BC model with different distance')
 plt.xlabel('percentage of malicious agents')
 plt.ylabel('avg belief')
-plt.savefig(file_name + 'bc_malicious_1_malicious.png')
+plt.savefig(file_name + 'malicious_1_malicious.png')
 
 
 
@@ -158,6 +179,8 @@ malicious = 0.1
 belief_evidence = []
 belief_own = []
 belief_pooled = []
+belief_confidence = []
+
 for threshold in threshold_ls:
     pooling = False
     result_evidence = simulate_bc_own_belief_malicious_1(simulation_times=simulation_times, pop_n=pop_n, max_iteration=max_iteration,
@@ -180,16 +203,29 @@ for threshold in threshold_ls:
                                                           malicious = malicious, threshold= threshold, noise=noise, pooling=pooling, dampening = dampening)
     belief_pooled.append(result_pooled['belief_avg_true_good'].mean(axis=1)[-1])
 
+    pooling = True
+    result_confidence = simulate_confidence_malicious_1(simulation_times=simulation_times, pop_n=pop_n,
+                                                        max_iteration=max_iteration, k=k, init_x=init_x,
+                                                        classification=True,
+                                                        dampening=dampening, alpha=alpha, prob_evidence=prob_evidence,
+                                                        malicious=malicious, mal_x=mal_x, threshold=threshold,
+                                                        noise=noise, pooling=pooling)
+    belief_confidence.append(result_confidence['belief_avg_true_good'].mean(axis=1)[-1])
+
+
+
 plt.figure('threshold')
 plt.plot(threshold_ls, belief_evidence, '--')
 plt.plot(threshold_ls, belief_own)
 plt.plot(threshold_ls, belief_pooled)
+plt.plot(threshold_ls, belief_confidence)
 
+
+
+plt.legend(['evidence only', 'own belief', 'pooled belief', 'confidence updating'])
+plt.title('average belief over 1000 iterations in different models')
 plt.ylim(0,1)
-
-plt.legend(['evidence only', 'own belief', 'pooled belief'])
-plt.title('BC model with different distance')
 plt.xlabel('threshold')
 plt.ylabel('avg belief')
-plt.savefig(file_name + 'bc_malicious_1_threshold.png')
+plt.savefig(file_name + 'malicious_1_threshold.png')
 

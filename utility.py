@@ -128,6 +128,8 @@ def opinion_pooling_own_belief_malicious_1(pool, threshold):
 
     return None
 
+
+
 def opinion_pooling_pooled_belief_malicious_1(pool, threshold):
     pool_prob = np.array([agent.x for agent in pool])
     for individual in pool:
@@ -138,6 +140,43 @@ def opinion_pooling_pooled_belief_malicious_1(pool, threshold):
             individual.x = s_prod(self_pool, np.round(1/len(self_pool), 5)) if self_pool.size != 0 else pooled_belief
 
     return None
+
+
+def opinion_pooling_confidence_malicious_1(pool, threshold):
+    pool_id = np.array([agent.id for agent in pool])
+    pool_prob = np.array([agent.x for agent in pool])
+
+    for individual in pool:
+        if individual.state:
+
+            # rescale confidence (sum to 1)
+            weights = weights_rescale(individual, pool_id)
+
+            # log linear
+            pooled_prob = log_op(pool_prob, weights)
+
+            # new confidence
+            confidence_new = confidence_updating(pool_prob, pooled_prob)
+            # if any predicted malfunctioning agents
+            if (confidence_new < threshold).any():
+                mal_id = pool_id[np.where(confidence_new<threshold)[0]]
+                confidence_new[confidence_new<threshold] = 0
+                individual.confidence[pool_id] = confidence_new
+                pooled_prob = log_op(pool_prob, weights_rescale(individual, pool_id))
+
+                confidence_new = confidence_updating(pool_prob, pooled_prob)
+
+                individual.x = pooled_prob
+                individual.confidence[pool_id] = confidence_new
+                individual.confidence[mal_id] = 0
+
+            else:
+                individual.x = pooled_prob
+                individual.confidence[pool_id] = confidence_new
+
+        individual.mal_detection()
+
+    return
 
 
 def opinion_pooling_own_belief_malicious_2(pool, threshold):
@@ -172,253 +211,6 @@ def opinion_pooling_pooled_belief_malicious_2(pool, threshold):
 
         else:
             individual.x = min_belief
-
-    return None
-
-
-def opinion_pooling(pool, threshold, memory, lamb):
-    pool_prob = np.array([agent.x for agent in pool])
-    pool_id = np.array([agent.id for agent in pool])
-    for individual in pool:
-        if individual.state:
-
-            # rescale confidence (sum to 1)
-            weights = weights_rescale(individual, pool_id)
-
-
-            # log-linear operator
-            pooled_prob = log_op(pool_prob, weights)
-
-            # new confidence
-            confidence_new = confidence_updating(pool_prob, pooled_prob)
-
-            if memory:
-                # old confidence
-                confidence_old = individual.confidence[pool_id]
-                # weighted new confidence
-                confidence_new = (1-lamb)*confidence_old + lamb*confidence_new
-
-            # if any predicted malfunctioning agents
-            if (confidence_new < threshold).any():
-
-                confidence_new[confidence_new<threshold] = 0
-                individual.confidence[pool_id] = confidence_new
-                pooled_prob = log_op(pool_prob, weights_rescale(individual, pool_id))
-
-                individual.x = pooled_prob
-
-
-            else:
-
-                individual.x = pooled_prob
-                individual.confidence[pool_id] = confidence_new
-
-        individual.mal_detection()
-
-    return None
-
-
-def opinion_pooling_equal_weights(pool, threshold, memory, lamb):
-    pool_prob = np.array([agent.x for agent in pool])
-    pool_id = np.array([agent.id for agent in pool])
-    for individual in pool:
-        if individual.state:
-
-            # rescale confidence (sum to 1)
-            weights = weights_rescale(individual, pool_id, euqal_weights=True)
-
-            if weights == 0.0:
-                pooled_prob = individual.x
-            else:
-                # log-linear operator with same weights
-                pooled_prob = s_prod(pool_prob, weights)
-
-            # new confidence
-            confidence_new = confidence_updating(pool_prob, pooled_prob)
-
-            if memory:
-                # old confidence
-                confidence_old = individual.confidence[pool_id]
-                # weighted new confidence
-                confidence_new = (1-lamb)*confidence_old + lamb*confidence_new
-
-            # if any predicted malfunctioning agents
-            if (confidence_new < threshold).any():
-
-                mal_id = confidence_new < threshold
-                confidence_new[mal_id] = 0.0
-                confidence_new[~mal_id] = 1.0
-                individual.confidence[pool_id] = confidence_new
-                pooled_prob = s_prod(pool_prob, weights_rescale(individual, pool_id, euqal_weights=True))
-                individual.x = pooled_prob
-
-            else:
-
-                individual.x = pooled_prob
-                individual.confidence[pool_id] = 1.0
-
-        individual.mal_detection()
-
-    return None
-
-
-def opinion_pooling_malicious(pool, threshold, strategy, memory, lamb):
-
-    pool_id = np.array([agent.id for agent in pool])
-    pool_prob = np.empty(len(pool))
-    loc_normal = [i for i, agent in enumerate(pool) if agent.state]
-    pool_normal_belief = [agent.x for agent in pool if agent.state]
-
-
-    min_belief = np.min(pool_normal_belief) if pool_normal_belief else 0.5
-
-    for i, agent in enumerate(pool):
-        if i not in loc_normal:
-            pool_prob[i] = agent.min_rule(min_belief)
-        else:
-            pool_prob[i] = agent.x
-
-    for individual in pool:
-        if individual.state:
-
-            # rescale confidence (sum to 1)
-            weights = weights_rescale(individual, pool_id)
-
-            # log linear
-            pooled_prob = log_op(pool_prob, weights)
-            # new confidence
-            confidence_new = confidence_updating(pool_prob, pooled_prob)
-
-            if memory:
-                # old confidence
-                confidence_old = individual.confidence[pool_id]
-                # weighted new confidence
-                confidence_new = (1-lamb)*confidence_old + lamb*confidence_new
-
-            # if any predicted malfunctioning agents
-            if (confidence_new < threshold).any():
-                mal_id = pool_id[np.where(confidence_new<threshold)[0]]
-                confidence_new[confidence_new<threshold] = 0
-                individual.confidence[pool_id] = confidence_new
-                pooled_prob = log_op(pool_prob, weights_rescale(individual, pool_id))
-
-                confidence_new = confidence_updating(pool_prob, pooled_prob)
-
-                individual.x = pooled_prob
-                individual.confidence[pool_id] = confidence_new
-                individual.confidence[mal_id] = 0
-
-            else:
-                individual.x = pooled_prob
-                individual.confidence[pool_id] = confidence_new
-
-        individual.mal_detection()
-
-    return
-
-
-def opinion_pooling_malicious_bc(pool, threshold, strategy, memory, lamb):
-
-    pool_id = np.array([agent.id for agent in pool])
-    pool_prob = np.empty(len(pool))
-    loc_normal = [i for i, agent in enumerate(pool) if agent.state]
-    pool_normal_belief = [agent.x for agent in pool if agent.state]
-
-
-    min_belief = np.min(pool_normal_belief) if pool_normal_belief else 0.5
-
-    for i, agent in enumerate(pool):
-        if i not in loc_normal:
-            pool_prob[i] = agent.min_rule(min_belief)
-        else:
-            pool_prob[i] = agent.x
-
-    for individual in pool:
-        if individual.state:
-                d_kl = np.exp(-np.array([kl_divergence(individual.x, belief) for belief in pool_prob]))
-                self_pool = pool_prob[d_kl > threshold]
-                individual.x = s_prod(self_pool, 1/ len(self_pool))
-
-        individual.mal_detection()
-    return
-
-def opinion_pooling_beta(pool, threshold, memory, lamb):
-    pool_prob = np.array([agent.x for agent in pool])
-    pool_id = np.array([agent.id for agent in pool])
-    for individual in pool:
-        if individual.state:
-
-            # rescale confidence (sum to 1)
-            weights = weights_rescale(individual, pool_id)
-
-            # log-linear operator
-            pooled_prob = log_op(pool_prob, weights)
-
-            # new confidence
-            confidence_new = confidence_updating_beta(pool_prob)
-            if memory:
-                # old confidence
-                confidence_old = individual.confidence[pool_id]
-                # weighted new confidence
-                confidence_new = (1-lamb)*confidence_old + lamb*confidence_new
-
-            # if any predicted malfunctioning agents
-            if (confidence_new < threshold).any():
-                mal_id = pool_id[np.where(confidence_new<threshold)[0]]
-                confidence_new[confidence_new<threshold] = 0
-                individual.confidence[pool_id] = confidence_new
-                pooled_prob = log_op(pool_prob, weights_rescale(individual, pool_id))
-
-                individual.x = pooled_prob
-                individual.confidence[pool_id] = confidence_new
-                individual.confidence[mal_id] = 0
-
-            else:
-                individual.x = pooled_prob
-                individual.confidence[pool_id] = confidence_new
-
-        individual.mal_detection()
-
-    return None
-
-
-def opinion_pooling_norm(pool, threshold, memory, lamb):
-    pool_prob = np.array([agent.x for agent in pool])
-    pool_id = np.array([agent.id for agent in pool])
-    for individual in pool:
-        if individual.state:
-
-            # rescale confidence (sum to 1)
-            weights = weights_rescale(individual, pool_id)
-
-            # log-linear operator
-            pooled_prob = log_op(pool_prob, weights)
-
-            # new confidence
-            confidence_new = confidence_updating_norm(pool_prob)
-
-            if memory:
-                # old confidence
-                confidence_old = individual.confidence[pool_id]
-                # weighted new confidence
-                confidence_new = (1-lamb)*confidence_old + lamb*confidence_new
-
-            # if any predicted malfunctioning agents
-            if (confidence_new < threshold).any():
-                mal_id = pool_id[np.where(confidence_new<threshold)[0]]
-                confidence_new[confidence_new<threshold] = 0
-                individual.confidence[pool_id] = confidence_new
-                pooled_prob = log_op(pool_prob, weights_rescale(individual, pool_id))
-
-                individual.x = pooled_prob
-                individual.confidence[pool_id] = confidence_new
-                individual.confidence[mal_id] = 0
-
-            else:
-                individual.x = pooled_prob
-                individual.confidence[pool_id] = confidence_new
-
-        individual.mal_detection()
 
     return None
 

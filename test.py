@@ -1,14 +1,50 @@
+from model import *
 
-def evidence_updating(x, alpha):
-    new_x = (1-alpha)*x/((1-alpha)*x + alpha*(1-x))
-    return new_x
 
-alpha =0.1
+# number of all agents
+pop_n = 100
 
-x = 0.5
-i = 0
-while x != 1.0:
-    print(f"{i} : {x}")
-    i += 1
-    x = evidence_updating(x, alpha)
+# initial belief of possible world H1
+init_x = None
+
+# (Malfunctioning agents) initial belief of possible world H1
+mal_x = 0.2
+
+# number of pooled agents in each iteration
+k = 10
+
+# maximum iteration
+max_iteration = 1
+
+# simulation times
+simulation_times = 1
+
+
+# P(E|H1) = 1 - alpha   if E = H1
+# P(E|H1) = alpha       if E = H2
+alpha = 0.1
+
+
+# probability of receiving evidence
+prob_evidence = 0.01
+
+
+# percentage of malicious agents
+malicious = 0.1
+threshold= 0.5
+
+
+noise = 0.2
+# dampening
+dampening = None
+
+pooling = True
+
+result_confidence = simulate_confidence_malicious_1(simulation_times=simulation_times, pop_n=pop_n,
+                                                    max_iteration=max_iteration, k=k, init_x=init_x,
+                                                    classification=True,
+                                                    dampening=dampening, alpha=alpha, prob_evidence=prob_evidence,
+                                                    malicious=malicious, mal_x=mal_x, threshold=threshold, noise=noise,
+                                                    pooling=pooling)
+
 

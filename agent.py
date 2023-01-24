@@ -16,8 +16,29 @@ class Agent:
         # each agent has its own id
         self.id = id
 
+        # each agent has its belief of agents
+        self.confidence = self.init_confidence(pop_n, id)
+        self.mal_ls = []
+
         # agent is functioning or not.
         self.state = state
+
+    def mal_detection(self):
+        mal_id = np.zeros(len(self.confidence))
+        if self.state:
+            self.mal_ls = list(np.where(self.confidence==0.0)[0])
+            mal_id[self.mal_ls] = 1
+        return mal_id
+
+    def init_confidence(self, pop_n, id):
+
+        # belief of other agents is 1
+        confidence = np.ones(pop_n)
+
+        # belief of itself is 1
+        # confidence[id] = 1
+
+        return confidence
 
 
 

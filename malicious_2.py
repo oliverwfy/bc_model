@@ -23,7 +23,7 @@ k = 10
 max_iteration = 1000
 
 # simulation times
-simulation_times = 100
+simulation_times = 50
 
 
 # P(E|H1) = 1 - alpha   if E = H1
@@ -58,6 +58,7 @@ belief_own = []
 belief_pooled = []
 for k in pool_ls:
     pooling = False
+
     result_evidence = simulate_bc_own_belief_malicious_2(simulation_times=simulation_times, pop_n=pop_n, max_iteration=max_iteration,
                                                          k=k, init_x = init_x, mal_x = mal_x, alpha=alpha, prob_evidence=prob_evidence,
                                                          malicious = malicious, threshold= threshold, noise=noise, pooling=pooling, dampening = dampening)
