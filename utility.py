@@ -215,6 +215,55 @@ def opinion_pooling_pooled_belief_malicious_2(pool, threshold):
     return None
 
 
+def opinion_pooling_confidence_malicious_2(pool, threshold):
+    pool_prob = np.array([agent.x for agent in pool])
+    pool_normal_belief = [agent.x for agent in pool if agent.state]
+    min_belief = np.min(pool_normal_belief) if pool_normal_belief else 0.5
+    pool_id = np.array([agent.id for agent in pool])
+
+    for individual in pool:
+        if individual.state:
+
+            # rescale confidence (sum to 1)
+            weights = weights_rescale(individual, pool_id)
+
+            # log linear
+            pooled_prob = log_op(pool_prob, weights)
+
+            # new confidence
+            confidence_new = confidence_updating(pool_prob, pooled_prob)
+            # if any predicted malfunctioning agents
+            if (confidence_new < threshold).any():
+                mal_id = pool_id[np.where(confidence_new<threshold)[0]]
+                confidence_new[confidence_new<threshold] = 0
+                individual.confidence[pool_id] = confidence_new
+                pooled_prob = log_op(pool_prob, weights_rescale(individual, pool_id))
+
+                confidence_new = confidence_updating(pool_prob, pooled_prob)
+
+                individual.x = pooled_prob
+                individual.confidence[pool_id] = confidence_new
+                individual.confidence[mal_id] = 0
+
+            else:
+                individual.x = pooled_prob
+                individual.confidence[pool_id] = confidence_new
+        else:
+            individual.x = min_belief
+
+        individual.mal_detection()
+
+    return
+
+
+
+
+
+
+
+
+
+
 def generate_malicious_agents(pop, malicious, mal_c):
     malicious_id = []
     if malicious:
