@@ -56,15 +56,12 @@ consensus_own = []
 consensus_pooled = []
 consensus_confidence = []
 
-
-threshold_ls = [0.1, 0.3, 0.5, 0.7, 0.9]
-
 k = 5
 
-malicious = 0.1
+mal_x_ls = [0, 0.02, 0.04, 0.06, 0.08, 0.1]
 
 
-for threshold in threshold_ls:
+for malicious in mal_x_ls:
     pooling = False
     model = None
     malicious_type = None
@@ -79,7 +76,7 @@ for threshold in threshold_ls:
 
     pooling = True
     model = 'bc_own_belief'
-    malicious_type = 'fixed_belief'
+    malicious_type = 'min_rule'
 
     result_own = simulate_model(simulation_times=simulation_times, pop_n=pop_n, max_iteration=max_iteration,
                                 model=model, malicious_type=malicious_type,
@@ -91,7 +88,7 @@ for threshold in threshold_ls:
 
     pooling = True
     model = 'bc_pooled_belief'
-    malicious_type = 'fixed_belief'
+    malicious_type = 'min_rule'
     result_pooled = simulate_model(simulation_times=simulation_times, pop_n=pop_n, max_iteration=max_iteration,
                                    model=model, malicious_type=malicious_type,
                                    k=k, init_x=init_x, mal_x=mal_x, alpha=alpha, prob_evidence=prob_evidence,
@@ -102,7 +99,7 @@ for threshold in threshold_ls:
 
     pooling = True
     model = 'confidence_updating'
-    malicious_type = 'fixed_belief'
+    malicious_type = 'min_rule'
     result_confidence = simulate_model(simulation_times=simulation_times, pop_n=pop_n, max_iteration=max_iteration,
                                        model=model, malicious_type=malicious_type,
                                        k=k, init_x=init_x, mal_x=mal_x, alpha=alpha, prob_evidence=prob_evidence,
@@ -111,30 +108,32 @@ for threshold in threshold_ls:
     belief_confidence.append(result_confidence['belief_avg_true_good'].mean(axis=1)[-1])
     consensus_confidence.append(int(result_confidence['consensus'].mean()))
 
-plt.figure('avg belief (threshold)')
+plt.figure('avg belief (malicious)')
 
-plt.plot(threshold_ls, belief_evidence, '--')
-plt.plot(threshold_ls, belief_own)
-plt.plot(threshold_ls, belief_pooled)
-plt.plot(threshold_ls, belief_confidence)
+plt.plot(mal_x_ls, belief_evidence, '--')
+plt.plot(mal_x_ls, belief_own)
+plt.plot(mal_x_ls, belief_pooled)
+plt.plot(mal_x_ls, belief_confidence)
 plt.ylim(0, 1.1)
 plt.legend(['evidence only', 'own belief', 'pooled belief', 'confidence updating'])
 plt.title(f'average belief over {int(max_iteration)} iterations in different models')
-plt.xlabel('threshold')
+plt.xlabel('percentage of malicious agents')
 plt.ylabel('avg belief')
-plt.savefig(file_name + 'malicious_1_threshold_avg_belief.png')
+plt.savefig(file_name + 'malicious_2_malicious_avg_belief.png')
 
 
-plt.figure('consensus (threshold)')
+plt.figure('consensus (malicious)')
 
-plt.plot(threshold_ls, consensus_evidence, '--')
-plt.plot(threshold_ls, consensus_own)
-plt.plot(threshold_ls, consensus_pooled)
-plt.plot(threshold_ls, consensus_confidence)
+plt.plot(mal_x_ls, consensus_evidence, '--')
+plt.plot(mal_x_ls, consensus_own)
+plt.plot(mal_x_ls, consensus_pooled)
+plt.plot(mal_x_ls, consensus_confidence)
 plt.ylim(0, max_iteration)
 plt.legend(['evidence only', 'own belief', 'pooled belief', 'confidence updating'])
 plt.title('consensus time in different models')
-plt.xlabel('threshold')
+plt.xlabel('percentage of malicious agents')
 plt.ylabel('iteration')
-plt.savefig(file_name + 'malicious_1_threshold_consensus.png')
+plt.savefig(file_name + 'malicious_2_malicious_consensus.png')
+
+
 

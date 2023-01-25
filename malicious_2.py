@@ -21,7 +21,7 @@ mal_x = 0.2
 k = 10
 
 # maximum iteration
-max_iteration = 1000
+max_iteration = 5000
 
 # simulation times
 simulation_times = 50

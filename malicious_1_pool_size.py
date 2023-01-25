@@ -24,7 +24,7 @@ k = 10
 max_iteration = 5000
 
 # simulation times
-simulation_times = 50
+simulation_times = 100
 
 # P(E|H1) = 1 - alpha   if E = H1
 # P(E|H1) = alpha       if E = H2
@@ -112,7 +112,7 @@ plt.plot(pool_ls, belief_evidence, '--')
 plt.plot(pool_ls, belief_own)
 plt.plot(pool_ls, belief_pooled)
 plt.plot(pool_ls, belief_confidence)
-plt.ylim(0, 1)
+plt.ylim(0, 1.1)
 plt.legend(['evidence only', 'own belief', 'pooled belief', 'confidence updating'])
 plt.title(f'average belief over {int(max_iteration)} iterations in different models')
 plt.xlabel('pool size k')
@@ -193,7 +193,7 @@ plt.savefig(file_name + 'malicious_1_pool_size_consensus.png')
 # plt.plot(mal_x_ls, belief_pooled)
 # plt.plot(mal_x_ls, belief_confidence)
 #
-# plt.ylim(0, 1)
+# plt.ylim(0, 1.1)
 # plt.legend(['evidence only', 'own belief', 'pooled belief', 'confidence updating'])
 # plt.title('average belief over 1000 iterations in different models')
 #
@@ -262,7 +262,7 @@ plt.savefig(file_name + 'malicious_1_pool_size_consensus.png')
 #
 # plt.legend(['evidence only', 'own belief', 'pooled belief', 'confidence updating'])
 # plt.title('average belief over 1000 iterations in different models')
-# plt.ylim(0, 1)
+# plt.ylim(0, 1.1)
 # plt.xlabel('threshold')
 # plt.ylabel('avg belief')
 # plt.savefig(file_name + 'malicious_1_threshold_avg_belief.png')

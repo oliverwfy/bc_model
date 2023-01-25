@@ -79,7 +79,7 @@ for threshold in threshold_ls:
 
     pooling = True
     model = 'bc_own_belief'
-    malicious_type = 'fixed_belief'
+    malicious_type = 'min_rule'
 
     result_own = simulate_model(simulation_times=simulation_times, pop_n=pop_n, max_iteration=max_iteration,
                                 model=model, malicious_type=malicious_type,
@@ -91,7 +91,7 @@ for threshold in threshold_ls:
 
     pooling = True
     model = 'bc_pooled_belief'
-    malicious_type = 'fixed_belief'
+    malicious_type = 'min_rule'
     result_pooled = simulate_model(simulation_times=simulation_times, pop_n=pop_n, max_iteration=max_iteration,
                                    model=model, malicious_type=malicious_type,
                                    k=k, init_x=init_x, mal_x=mal_x, alpha=alpha, prob_evidence=prob_evidence,
@@ -102,7 +102,7 @@ for threshold in threshold_ls:
 
     pooling = True
     model = 'confidence_updating'
-    malicious_type = 'fixed_belief'
+    malicious_type = 'min_rule'
     result_confidence = simulate_model(simulation_times=simulation_times, pop_n=pop_n, max_iteration=max_iteration,
                                        model=model, malicious_type=malicious_type,
                                        k=k, init_x=init_x, mal_x=mal_x, alpha=alpha, prob_evidence=prob_evidence,
@@ -122,7 +122,7 @@ plt.legend(['evidence only', 'own belief', 'pooled belief', 'confidence updating
 plt.title(f'average belief over {int(max_iteration)} iterations in different models')
 plt.xlabel('threshold')
 plt.ylabel('avg belief')
-plt.savefig(file_name + 'malicious_1_threshold_avg_belief.png')
+plt.savefig(file_name + 'malicious_2_threshold_avg_belief.png')
 
 
 plt.figure('consensus (threshold)')
@@ -136,5 +136,5 @@ plt.legend(['evidence only', 'own belief', 'pooled belief', 'confidence updating
 plt.title('consensus time in different models')
 plt.xlabel('threshold')
 plt.ylabel('iteration')
-plt.savefig(file_name + 'malicious_1_threshold_consensus.png')
+plt.savefig(file_name + 'malicious_2_threshold_consensus.png')
 
