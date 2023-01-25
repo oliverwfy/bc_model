@@ -11,13 +11,13 @@ init_x = None
 mal_x = 0.2
 
 # number of pooled agents in each iteration
-k = 10
+k = 5
 
 # maximum iteration
-max_iteration = 1
+max_iteration = 1000
 
 # simulation times
-simulation_times = 1
+simulation_times = 2
 
 
 # P(E|H1) = 1 - alpha   if E = H1
@@ -39,12 +39,14 @@ noise = 0.2
 dampening = None
 
 pooling = True
+model = 'confidence_updating'
+malicious_type = 'fixed_belief'
 
-result_confidence = simulate_confidence_malicious_1(simulation_times=simulation_times, pop_n=pop_n,
-                                                    max_iteration=max_iteration, k=k, init_x=init_x,
-                                                    classification=True,
-                                                    dampening=dampening, alpha=alpha, prob_evidence=prob_evidence,
-                                                    malicious=malicious, mal_x=mal_x, threshold=threshold, noise=noise,
-                                                    pooling=pooling)
+result_confidence = simulate_model(simulation_times=simulation_times, pop_n=pop_n, max_iteration=max_iteration,
+                                       model=model, malicious_type=malicious_type,
+                                       k=k, init_x=init_x, mal_x=mal_x, alpha=alpha, prob_evidence=prob_evidence,
+                                       malicious=malicious, threshold=threshold, noise=noise, pooling=pooling,
+                                       dampening=dampening)
 
 
+result = int(result_confidence['consensus'].mean())
