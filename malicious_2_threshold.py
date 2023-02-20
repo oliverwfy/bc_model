@@ -31,7 +31,7 @@ simulation_times = 100
 alpha = 0.1
 
 # probability of receiving evidence
-prob_evidence = 0.01
+prob_evidence = 0.005
 
 # percentage of malicious agents
 malicious = 0.1
@@ -40,7 +40,7 @@ file_name = 'malicious_one/'
 
 threshold = 0.5
 
-noise = 0.2
+noise = 0.3
 # dampening
 dampening = None
 
