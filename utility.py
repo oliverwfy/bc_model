@@ -300,3 +300,18 @@ def avg_belief_good(mal_id, pop):
     belief_avg = np.sum([agent.x for agent in good_agents]) / len(good_agents)
 
     return belief_avg
+
+
+def opinion_pooling_own_belief_malicious_1_total_variation(pop, confidence_mat, n, i, threshold=0.5):
+    pool_prob = np.array([agent.x for agent in pop])
+    for individual in pop:
+        if individual.state:
+            d = total_variation(pool_prob, individual.x)
+            confidence_mat[n,i,individual.id,:] = d
+            self_pool = pool_prob[np.where( d < threshold )]
+            individual.x = s_prod(self_pool, np.round(1/len(self_pool), 5)) if self_pool.size != 0 else individual.x
+
+    return None
+
+def total_variation(pool_prob, own):
+    return np.round([np.abs(x-own) for x in pool_prob], 6)
