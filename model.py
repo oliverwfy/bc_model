@@ -3,13 +3,14 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score
 
 
 def simulate_model(simulation_times=100, pop_n=100, max_iteration=10000, k=3, init_x = 0.5, model = 'bc_own_belief', malicious_type = 'fixed_belief',
-                           mal_x = 0.5,alpha=0.5, prob_evidence=0.02, malicious=0.0, threshold= 0.5,
+                           distance = 'kl',mal_x = 0.5,alpha=0.5, prob_evidence=0.02, malicious=0.0, threshold= 0.5,
                            noise=None, pooling=True, dampening = False):
 
     consensus = np.empty(simulation_times)
     belief_avg_true_good = np.empty([max_iteration, simulation_times])
     accuracy_swarm = belief_avg_true_good.copy()
-
+    precision_swarm = belief_avg_true_good.copy()
+    recall_swarm = belief_avg_true_good.copy()
 
     print('--------------Simulation Starts--------------')
     print('Simulation times : {}'.format(simulation_times))
@@ -57,24 +58,11 @@ def simulate_model(simulation_times=100, pop_n=100, max_iteration=10000, k=3, in
                 # pool selection
                 pool = np.random.choice(pop, size=k, replace=False)
                 # opinion pooling
-                if malicious_type == 'fixed_belief':
-                    if model == 'bc_own_belief':
-                        opinion_pooling_own_belief_malicious_1(pool, threshold=threshold)
-                    elif model == 'bc_pooled_belief':
-                        opinion_pooling_pooled_belief_malicious_1(pool, threshold=threshold)
-                    elif model == 'confidence_updating':
-                        opinion_pooling_confidence_malicious_1(pool, threshold=threshold)
+                if 'bc' in model:
+                    opinion_pooling_bc(pool, threshold, model, malicious_type, distance)
 
-                elif malicious_type == 'min_rule':
-                    if model == 'bc_own_belief':
-                        opinion_pooling_own_belief_malicious_2(pool, threshold=threshold)
-                    elif model == 'bc_pooled_belief':
-                        opinion_pooling_pooled_belief_malicious_2(pool, threshold=threshold)
-                    elif model == 'confidence_updating':
-                        opinion_pooling_confidence_malicious_2(pool, threshold=threshold)
-
-
-                if model == 'confidence_updating':
+                elif model == 'confidence_updating':
+                    opinion_pooling_confidence_updating(pool, threshold, model, malicious_type, distance)
                     pred_mal_ls = np.zeros(pop_n)
 
                     for agent in pop:
@@ -86,13 +74,15 @@ def simulate_model(simulation_times=100, pop_n=100, max_iteration=10000, k=3, in
                     pred_mal_ls[pred_mal_id] = 1
 
                     # swarm's prediction
-                    accuracy_swarm[i,n] = accuracy_score(true_mal_ls, pred_mal_ls)
-
+                    accuracy_swarm[i,n] = np.round(accuracy_score(true_mal_ls, pred_mal_ls), 5)
+                    precision_swarm[i,n] = np.round(precision_score(true_mal_ls, pred_mal_ls), 5)
+                    recall_swarm[i,n] = np.round(recall_score(true_mal_ls, pred_mal_ls), 5)
         consensus[n] = int(consensus_time) if consensus_time else max_iteration
 
     print('----------------Simulation ends----------------\n\n')
 
-    result = {'belief_avg_true_good': belief_avg_true_good, 'consensus' : consensus, 'accuracy' : accuracy_swarm}
+    result = {'belief_avg_true_good': belief_avg_true_good, 'consensus' : consensus, 'accuracy' : accuracy_swarm,
+              'precision' : precision_swarm, 'recall' : recall_swarm}
     return result
 
 

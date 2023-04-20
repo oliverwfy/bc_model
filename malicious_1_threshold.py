@@ -63,13 +63,15 @@ k = 5
 
 malicious = 0.1
 
+distance = 'total_variation'
+
 
 for threshold in threshold_ls:
     pooling = False
     model = None
     malicious_type = None
     result_evidence = simulate_model(simulation_times=simulation_times, pop_n=pop_n, max_iteration=max_iteration,
-                                     model=model, malicious_type=malicious_type,
+                                     model=model, malicious_type=malicious_type, distance=distance,
                                      k=k, init_x=init_x, mal_x=mal_x, alpha=alpha, prob_evidence=prob_evidence,
                                      malicious=malicious, threshold=threshold, noise=noise, pooling=pooling,
                                      dampening=dampening)

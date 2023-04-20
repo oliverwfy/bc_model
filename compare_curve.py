@@ -1,4 +1,4 @@
-from model import simulate_malicious_acc, simulate_malicious_acc_bc
+from model import simulate_model
 import matplotlib.pyplot as plt
 import warnings
 
