@@ -54,6 +54,7 @@ def confidence_interval(data):
     std = data.std(axis=1)
     return 1.960*std/np.sqrt(n)
 
+
 avg_belief = np.load('avg_belief.npy')
 ci = confidence_interval(avg_belief)
 plt.plot(range(len(avg_belief)), avg_belief.mean(axis=1), color='green')

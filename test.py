@@ -1,6 +1,8 @@
 from model import simulate_model
 import matplotlib.pyplot as plt
-
+import numpy as np
+import warnings
+warnings.filterwarnings('ignore')
 
 # number of all agents
 pop_n = 100
@@ -18,7 +20,7 @@ k = 5
 max_iteration = 1000
 
 # simulation times
-simulation_times = 5
+simulation_times = 100
 
 
 # P(E|H1) = 1 - alpha   if E = H1
@@ -32,7 +34,7 @@ prob_evidence = 0.01
 
 # percentage of malicious agents
 malicious = 0.1
-threshold= 0.7
+threshold= 0.5
 
 
 noise = 0.1
@@ -43,28 +45,25 @@ pooling = True
 
 model = 'confidence_updating'
 malicious_type = 'fixed_belief'
-distance = 'kl'
+distance = 'total_variation'
 
 
-result_bc_own_belief_tv = simulate_model(simulation_times=simulation_times, pop_n=pop_n, max_iteration=max_iteration,
+
+result = simulate_model(simulation_times=simulation_times, pop_n=pop_n, max_iteration=max_iteration,
                                  model=model, malicious_type=malicious_type, distance=distance,
                                  k=k, init_x=init_x, mal_x=mal_x, alpha=alpha, prob_evidence=prob_evidence,
                                  malicious=malicious, threshold=threshold, noise=noise, pooling=pooling,
                                  dampening=dampening)
 
-distance = 'kl'
-
-result_bc_own_belief_kl = simulate_model(simulation_times=simulation_times, pop_n=pop_n, max_iteration=max_iteration,
-                                         model=model, malicious_type=malicious_type, distance=distance,
-                                         k=k, init_x=init_x, mal_x=mal_x, alpha=alpha, prob_evidence=prob_evidence,
-                                         malicious=malicious, threshold=threshold, noise=noise, pooling=pooling,
-                                         dampening=dampening)
+def confidence_interval(data):
+    n = data.shape[1]
+    std = data.std(axis=1)
+    return 1.960*std/np.sqrt(n)
 
 
-plt.plot(range(max_iteration), result_bc_own_belief_kl['accuracy'].mean(axis=1))
-plt.plot(range(max_iteration), result_bc_own_belief_kl['precision'].mean(axis=1))
-plt.plot(range(max_iteration), result_bc_own_belief_kl['recall'].mean(axis=1))
 
+np.save('fault_detection/' + 'accuracy.npy', result['accuracy'])
+np.save('fault_detection/' + 'recall.npy', result['recall'])
+np.save('fault_detection/' + 'precision.npy', result['precision'])
+np.save('fault_detection/' + 'avg_belief.npy', result['belief_avg_true_good'])
 
-plt.legend(['acc' ,'pre', 'recall'])
-plt.show()
