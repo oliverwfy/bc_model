@@ -77,6 +77,8 @@ def simulate_model(simulation_times=100, pop_n=100, max_iteration=10000, k=3, in
                     accuracy_swarm[i,n] = np.round(accuracy_score(true_mal_ls, pred_mal_ls), 5)
                     precision_swarm[i,n] = np.round(precision_score(true_mal_ls, pred_mal_ls), 5)
                     recall_swarm[i,n] = np.round(recall_score(true_mal_ls, pred_mal_ls), 5)
+                else:
+                    opinion_pooling_sprod(pool, threshold, model, malicious_type, distance)
         consensus[n] = int(consensus_time) if consensus_time else max_iteration
 
     print('----------------Simulation ends----------------\n\n')

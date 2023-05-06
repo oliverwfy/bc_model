@@ -140,9 +140,36 @@ def opinion_pooling_confidence_updating(pool, threshold, model, malicious_type, 
     elif malicious_type == 'min_rule':
         opinion_pooling_confidence_malicious_2(pool, threshold, distance)
 
+    return None
 
+def opinion_pooling_sprod(pool, threshold, model, malicious_type, distance):
+    if malicious_type == 'fixed_belief':
+        opinion_pooling_sprod_1(pool, threshold, distance)
+    elif malicious_type == 'min_rule':
+        opinion_pooling_sprod_2(pool, threshold, distance)
 
     return None
+
+def opinion_pooling_sprod_1(pool, threshold, distance):
+    pool_prob = np.array([agent.x for agent in pool])
+    for individual in pool:
+        if individual.state:
+            individual.x = s_prod(pool_prob, np.round(1/len(pool_prob), 5))
+
+    return None
+
+def opinion_pooling_sprod_2(pool, threshold, distance):
+    pool_prob = np.array([agent.x for agent in pool])
+    pool_normal_belief = [agent.x for agent in pool if agent.state]
+    min_belief = np.min(pool_normal_belief) if pool_normal_belief else 0.5
+
+    for individual in pool:
+        if individual.state:
+            individual.x = s_prod(pool_prob, np.round(1/len(pool_prob), 5))
+        else:
+            individual.x = min_belief
+    return None
+
 
 def opinion_pooling_own_belief_malicious_1(pool, threshold, distance):
     pool_prob = np.array([agent.x for agent in pool])
