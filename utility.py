@@ -66,16 +66,17 @@ def kl_divergence(x1, x2):
 #     return output
 
 
-def weights_rescale(agent, pool_id, euqal_weights = False):
+def weights_rescale(confidence, euqal_weights = False):
 
-    confidence = agent.confidence[pool_id]
 
     if not euqal_weights:
-        if confidence.sum() < tol:
+        if confidence.sum() <= tol:
+
             return np.zeros((len(confidence)))
         weight = confidence / confidence.sum()
+
     else:
-        if confidence.sum() < tol:
+        if confidence.sum() <= tol:
             return 0.0
         return 1.0/confidence.sum()
 
@@ -179,7 +180,7 @@ def opinion_pooling_own_belief_malicious_1(pool, threshold, distance):
                 d = 1 - confidence_updating(pool_prob, individual.x)
             elif distance == 'total_variation':
                 d = total_variation(pool_prob, individual.x)
-            self_pool = pool_prob[np.where( d < threshold )]
+            self_pool = pool_prob[np.where( d <= threshold )]
             individual.x = s_prod(self_pool, np.round(1/len(self_pool), 5))
 
     return None
@@ -196,7 +197,7 @@ def opinion_pooling_pooled_belief_malicious_1(pool, threshold, distance):
             elif distance == 'total_variation':
                 d = total_variation(pool_prob, pooled_belief)
 
-            self_pool = pool_prob[np.where( d < threshold )]
+            self_pool = pool_prob[np.where( d <= threshold )]
             individual.x = s_prod(self_pool, np.round(1/len(self_pool), 5)) if self_pool.size != 0 else pooled_belief
 
     return None
@@ -210,7 +211,7 @@ def opinion_pooling_confidence_malicious_1(pool, threshold, distance):
         if individual.state:
 
             # rescale confidence (sum to 1)
-            weights = weights_rescale(individual, pool_id)
+            weights = weights_rescale(individual.confidence[pool_id])
 
             # log linear
             pooled_prob = log_op(pool_prob, weights)
@@ -222,12 +223,12 @@ def opinion_pooling_confidence_malicious_1(pool, threshold, distance):
                 confidence_new = 1 - total_variation(pool_prob, pooled_prob)
 
             # if any predicted malfunctioning agents
-            if (confidence_new < threshold).any():
-                mal_id = pool_id[np.where(confidence_new < threshold)[0]]
-                confidence_new[confidence_new < threshold] = 0
+            if (confidence_new <= threshold).any():
+                mal_id = pool_id[np.where(confidence_new <= threshold)[0]]
+                confidence_new[confidence_new <= threshold] = 0
                 individual.confidence[pool_id] = confidence_new
-                pooled_prob = log_op(pool_prob, weights_rescale(individual, pool_id))
 
+                pooled_prob = log_op(pool_prob, weights_rescale(confidence_new))
                 if distance == 'kl':
                     confidence_new = confidence_updating(pool_prob, pooled_prob)
                 elif distance == 'total_variation':
@@ -258,7 +259,7 @@ def opinion_pooling_own_belief_malicious_2(pool, threshold, distance):
             elif distance == 'total_variation':
                 d = total_variation(pool_prob, individual.x)
 
-            self_pool = pool_prob[np.where( d < threshold )]
+            self_pool = pool_prob[np.where( d <= threshold )]
             individual.x = s_prod(self_pool, np.round(1/len(self_pool), 5))
         else:
             individual.x = min_belief
@@ -281,7 +282,7 @@ def opinion_pooling_pooled_belief_malicious_2(pool, threshold, distance):
             elif distance == 'total_variation':
                 d = total_variation(pool_prob, pooled_belief)
 
-            self_pool = pool_prob[np.where( d < threshold )]
+            self_pool = pool_prob[np.where( d <= threshold )]
             individual.x = s_prod(self_pool, np.round(1/len(self_pool), 5)) if self_pool.size != 0 else pooled_belief
 
         else:
@@ -300,7 +301,7 @@ def opinion_pooling_confidence_malicious_2(pool, threshold, distance):
         if individual.state:
 
             # rescale confidence (sum to 1)
-            weights = weights_rescale(individual, pool_id)
+            weights = weights_rescale(individual.confidence[pool_id])
 
             # log linear
             pooled_prob = log_op(pool_prob, weights)
@@ -313,11 +314,11 @@ def opinion_pooling_confidence_malicious_2(pool, threshold, distance):
                 confidence_new = 1 - total_variation(pool_prob, pooled_prob)
 
             # if any predicted malfunctioning agents
-            if (confidence_new < threshold).any():
-                mal_id = pool_id[np.where(confidence_new<threshold)[0]]
-                confidence_new[confidence_new<threshold] = 0
+            if (confidence_new <= threshold).any():
+                mal_id = pool_id[np.where(confidence_new<=threshold)[0]]
+                confidence_new[confidence_new<=threshold] = 0
                 individual.confidence[pool_id] = confidence_new
-                pooled_prob = log_op(pool_prob, weights_rescale(individual, pool_id))
+                pooled_prob = log_op(pool_prob, weights_rescale(confidence_new))
 
                 if distance == 'kl':
                     confidence_new = confidence_updating(pool_prob, pooled_prob)
@@ -383,13 +384,14 @@ def avg_belief_good(mal_id, pop):
     return belief_avg
 
 
+
 def opinion_pooling_own_belief_malicious_1_total_variation(pop, confidence_mat, n, i, threshold=0.5):
     pool_prob = np.array([agent.x for agent in pop])
     for individual in pop:
         if individual.state:
             d = total_variation(pool_prob, individual.x)
             confidence_mat[n,i,individual.id,:] = d
-            self_pool = pool_prob[np.where( d < threshold )]
+            self_pool = pool_prob[np.where( d <= threshold )]
             individual.x = s_prod(self_pool, np.round(1/len(self_pool), 5)) if self_pool.size != 0 else individual.x
 
     return None

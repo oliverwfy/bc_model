@@ -3,14 +3,17 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score
 
 
 def simulate_model(simulation_times=100, pop_n=100, max_iteration=10000, k=3, init_x = 0.5, model = 'bc_own_belief', malicious_type = 'fixed_belief',
-                           distance = 'kl',mal_x = 0.5,alpha=0.5, prob_evidence=0.02, malicious=0.0, threshold= 0.5,
-                           noise=None, pooling=True, dampening = False):
+                           distance = 'kl',mal_x = 0.5,alpha=0.5, prob_evidence=0.02, malicious=0.0, threshold=0.5,
+                           noise=None, pooling=True, dampening = False, consensus_only = False, detection_only = False):
 
     consensus = np.empty(simulation_times)
     belief_avg_true_good = np.empty([max_iteration, simulation_times])
     accuracy_swarm = belief_avg_true_good.copy()
     precision_swarm = belief_avg_true_good.copy()
     recall_swarm = belief_avg_true_good.copy()
+    accuracy_individual = belief_avg_true_good.copy()
+    precision_individual = belief_avg_true_good.copy()
+    recall_individual = belief_avg_true_good.copy()
 
     print('--------------Simulation Starts--------------')
     print('Simulation times : {}'.format(simulation_times))
@@ -43,6 +46,10 @@ def simulate_model(simulation_times=100, pop_n=100, max_iteration=10000, k=3, in
             belief_avg_true_good[i,n] = avg_belief_good(true_mal_id, pop)
             if not consensus_time and belief_avg_true_good[i,n] >= 0.99:
                 consensus_time = i
+                if consensus_only:
+                    consensus[n] = int(consensus_time)
+                    break
+
             # evidential updating
             for agent in pop:
                 if np.random.random() <= prob_evidence and agent.state:
@@ -50,7 +57,6 @@ def simulate_model(simulation_times=100, pop_n=100, max_iteration=10000, k=3, in
                         evidential_update(agent, 1-alpha, dampening)
                     else:
                         evidential_update(agent, alpha, dampening)
-
 
 
             if pooling:
@@ -65,18 +71,28 @@ def simulate_model(simulation_times=100, pop_n=100, max_iteration=10000, k=3, in
                     opinion_pooling_confidence_updating(pool, threshold, model, malicious_type, distance)
                     pred_mal_ls = np.zeros(pop_n)
 
+                    pred_mal_ls_individual = pop[-1].mal_detection().astype(int)
+                    accuracy_individual[i,n] = np.round(accuracy_score(true_mal_ls, pred_mal_ls_individual), 5)
+                    precision_individual[i,n] = np.round(precision_score(true_mal_ls, pred_mal_ls_individual), 5)
+                    recall_individual[i,n] = np.round(recall_score(true_mal_ls, pred_mal_ls_individual), 5)
+
+
                     for agent in pop:
                         pred_mal_ls += agent.mal_detection()
 
-                    # an agent is malfunctioning if it is labeled by half of agents
-                    pred_mal_id = np.where(pred_mal_ls >= pop_n/2)[0]
+                    # an agent is malfunctioning if it is labeled by half of normal agents
+                    pred_mal_id = np.where(pred_mal_ls >= (pop_n - pop_n*malicious)/2)[0]
                     pred_mal_ls = np.zeros(pop_n)
                     pred_mal_ls[pred_mal_id] = 1
+
 
                     # swarm's prediction
                     accuracy_swarm[i,n] = np.round(accuracy_score(true_mal_ls, pred_mal_ls), 5)
                     precision_swarm[i,n] = np.round(precision_score(true_mal_ls, pred_mal_ls), 5)
                     recall_swarm[i,n] = np.round(recall_score(true_mal_ls, pred_mal_ls), 5)
+                    if detection_only and accuracy_swarm[i,n] == 1.0:
+                        break
+
                 else:
                     opinion_pooling_sprod(pool, threshold, model, malicious_type, distance)
         consensus[n] = int(consensus_time) if consensus_time else max_iteration
@@ -84,7 +100,8 @@ def simulate_model(simulation_times=100, pop_n=100, max_iteration=10000, k=3, in
     print('----------------Simulation ends----------------\n\n')
 
     result = {'belief_avg_true_good': belief_avg_true_good, 'consensus' : consensus, 'accuracy' : accuracy_swarm,
-              'precision' : precision_swarm, 'recall' : recall_swarm}
+              'precision' : precision_swarm, 'recall' : recall_swarm, 'accuracy_individual' : accuracy_individual,
+              'precision_individual' : precision_individual, 'recall_individual' : recall_individual, 'pop' : pop}
     return result
 
 
