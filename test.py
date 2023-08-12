@@ -4,66 +4,23 @@ import numpy as np
 import warnings
 warnings.filterwarnings('ignore')
 
-# number of all agents
-pop_n = 100
 
-# initial belief of possible world H1
-init_x = None
-
-# (Malfunctioning agents) initial belief of possible world H1
-mal_x = 0.2
-
-# number of pooled agents in each iteration
-k = 5
-
-# maximum iteration
-max_iteration = 1000
-
-# simulation times
-simulation_times = 100
+directory_name = 'consensus/'
+bc = np.load(directory_name + 'consensus_bc_evidence_rate_0.3.npy')
+ru = np.load(directory_name + 'consensus_ru_evidence_rate_0.3.npy')
+eq = np.load(directory_name + 'consensus_eq_evidence_rate_0.3.npy')
 
 
-# P(E|H1) = 1 - alpha   if E = H1
-# P(E|H1) = alpha       if E = H2
-alpha = 0.1
+evidence_rate_ls = np.linspace(0.001, 0.03, 30)
 
 
-# probability of receiving evidence
-prob_evidence = 0.01
+plt.plot(evidence_rate_ls[0:20], eq[0:20])
+plt.plot(evidence_rate_ls[0:20], ru[0:20])
+plt.plot(evidence_rate_ls[0:20], bc[0:20])
 
+plt.xlabel(r'evidence rate ($\beta$)', fontsize=14)
+plt.ylabel('consensus time', fontsize=14)
+# plt.title(rf'$\gamma = {threshold},\alpha = {alpha}, \beta = {prob_evidence}, \epsilon={noise}$', fontsize=14)
+plt.legend(['equal weights', 'reliability updating', 'bc'], fontsize=14)
 
-# percentage of malicious agents
-malicious = 0.1
-threshold= 0.5
-
-
-noise = 0.1
-# dampening
-dampening = None
-
-pooling = True
-
-model = 'confidence_updating'
-malicious_type = 'fixed_belief'
-distance = 'total_variation'
-
-
-
-result = simulate_model(simulation_times=simulation_times, pop_n=pop_n, max_iteration=max_iteration,
-                                 model=model, malicious_type=malicious_type, distance=distance,
-                                 k=k, init_x=init_x, mal_x=mal_x, alpha=alpha, prob_evidence=prob_evidence,
-                                 malicious=malicious, threshold=threshold, noise=noise, pooling=pooling,
-                                 dampening=dampening)
-
-def confidence_interval(data):
-    n = data.shape[1]
-    std = data.std(axis=1)
-    return 1.960*std/np.sqrt(n)
-
-
-
-np.save('fault_detection/' + 'accuracy.npy', result['accuracy'])
-np.save('fault_detection/' + 'recall.npy', result['recall'])
-np.save('fault_detection/' + 'precision.npy', result['precision'])
-np.save('fault_detection/' + 'avg_belief.npy', result['belief_avg_true_good'])
-
+plt.show()

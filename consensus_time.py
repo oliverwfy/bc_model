@@ -70,38 +70,41 @@ for prob_evidence in evidence_rate_ls:
                             dampening=dampening, consensus_only=consensus_only)
 
     consensus_ru.append(result_ru['consensus'].mean())
-
-    model = 'sprod'
-
-    result_eq = simulate_model(simulation_times=simulation_times, pop_n=pop_n, max_iteration=max_iteration,
-                                  model=model, malicious_type=malicious_type, distance=distance,
-                                  k=k, init_x=init_x, mal_x=mal_x, alpha=alpha, prob_evidence=prob_evidence,
-                                  malicious=malicious, threshold=threshold, noise=noise, pooling=pooling,
-                                  dampening=dampening, consensus_only=consensus_only)
-
-    consensus_eq.append(result_eq['consensus'].mean())
-
-    # model = 'bc'
     #
-    # result_bc = simulate_model(simulation_times=simulation_times, pop_n=pop_n, max_iteration=max_iteration,
+    # model = 'sprod'
+    #
+    # result_eq = simulate_model(simulation_times=simulation_times, pop_n=pop_n, max_iteration=max_iteration,
     #                               model=model, malicious_type=malicious_type, distance=distance,
     #                               k=k, init_x=init_x, mal_x=mal_x, alpha=alpha, prob_evidence=prob_evidence,
     #                               malicious=malicious, threshold=threshold, noise=noise, pooling=pooling,
     #                               dampening=dampening, consensus_only=consensus_only)
     #
-    # consensus_bc.append(result_bc['consensus'].mean())
+    # consensus_eq.append(result_eq['consensus'].mean())
+
+    model = 'bc_own_belief'
+
+    result_bc = simulate_model(simulation_times=simulation_times, pop_n=pop_n, max_iteration=max_iteration,
+                                  model=model, malicious_type=malicious_type, distance=distance,
+                                  k=k, init_x=init_x, mal_x=mal_x, alpha=alpha, prob_evidence=prob_evidence,
+                                  malicious=malicious, threshold=threshold, noise=noise, pooling=pooling,
+                                  dampening=dampening, consensus_only=consensus_only)
+
+    consensus_bc.append(result_bc['consensus'].mean())
 
 
 
-plt.figure()
-plt.plot(evidence_rate_ls, consensus_eq)
-plt.plot(evidence_rate_ls, consensus_ru)
+# plt.figure()
+# plt.plot(evidence_rate_ls, consensus_eq)
+# plt.plot(evidence_rate_ls, consensus_ru)
+#
+# plt.xlabel(r'evidence rate ($\beta$)', fontsize=14)
+# plt.ylabel('consensus time', fontsize=14)
+# plt.title(rf'$\gamma = {threshold},\alpha = {alpha}, \beta = {prob_evidence}, \epsilon={noise}$', fontsize=14)
+# plt.legend(['equal weights', 'reliability updating'], fontsize=14)
+# np.save(directory_name + f'consensus_eq_evidence_rate_0.3.npy', consensus_eq)
+# np.save(directory_name + f'consensus_ru_evidence_rate_0.3.npy', consensus_ru)
+#
+# plt.savefig(directory_name + f'consensus_time_evidence_rate_0.3.png')
 
-plt.xlabel(r'evidence rate ($\beta$)', fontsize=14)
-plt.ylabel('consensus time', fontsize=14)
-plt.title(rf'$\gamma = {threshold},\alpha = {alpha}, \beta = {prob_evidence}, \epsilon={noise}$', fontsize=14)
-plt.legend(['equal weights', 'reliability updating'], fontsize=14)
-np.save(directory_name + f'consensus_eq_evidence_rate_0.3.npy', consensus_eq)
+np.save(directory_name + f'consensus_bc_evidence_rate_0.3.npy', consensus_bc)
 np.save(directory_name + f'consensus_ru_evidence_rate_0.3.npy', consensus_ru)
-
-plt.savefig(directory_name + f'consensus_time_evidence_rate_0.3.png')

@@ -7,6 +7,7 @@ def simulate_model(simulation_times=100, pop_n=100, max_iteration=10000, k=3, in
                            noise=None, pooling=True, dampening = False, consensus_only = False, detection_only = False):
 
     consensus = np.empty(simulation_times)
+    detection = consensus.copy()
     belief_avg_true_good = np.empty([max_iteration, simulation_times])
     accuracy_swarm = belief_avg_true_good.copy()
     precision_swarm = belief_avg_true_good.copy()
@@ -34,6 +35,7 @@ def simulate_model(simulation_times=100, pop_n=100, max_iteration=10000, k=3, in
 
     for n in range(simulation_times):
         consensus_time = None
+        detection_time = None
         pop = np.array([Agent(pop_n, _, init_x,  True) for _ in range(pop_n)])
         true_mal_id = generate_malfunctioning_agents(pop, malicious, init_x=mal_x)
 
@@ -91,15 +93,19 @@ def simulate_model(simulation_times=100, pop_n=100, max_iteration=10000, k=3, in
                     precision_swarm[i,n] = np.round(precision_score(true_mal_ls, pred_mal_ls), 5)
                     recall_swarm[i,n] = np.round(recall_score(true_mal_ls, pred_mal_ls), 5)
                     if detection_only and accuracy_swarm[i,n] == 1.0:
-                        break
+                        if not detection_time:
+                            detection_time = i
+                            detection[n] = int(detection_time)
+                            break
 
                 else:
                     opinion_pooling_sprod(pool, threshold, model, malicious_type, distance)
         consensus[n] = int(consensus_time) if consensus_time else max_iteration
+        detection[n] = int(detection_time) if detection_time else max_iteration
 
     print('----------------Simulation ends----------------\n\n')
 
-    result = {'belief_avg_true_good': belief_avg_true_good, 'consensus' : consensus, 'accuracy' : accuracy_swarm,
+    result = {'belief_avg_true_good': belief_avg_true_good, 'consensus' : consensus, 'detection': detection, 'accuracy' : accuracy_swarm,
               'precision' : precision_swarm, 'recall' : recall_swarm, 'accuracy_individual' : accuracy_individual,
               'precision_individual' : precision_individual, 'recall_individual' : recall_individual, 'pop' : pop}
     return result
